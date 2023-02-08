@@ -1,0 +1,78 @@
+name: exercise_workflow
+
+on: [push]
+
+jobs:
+  style_check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: "Install style checker"
+        run: pip install clang-format
+      - name: "Run style check"
+        run: clang-format -n --Werror src/*
+      - name: "Evaluate results"
+        run: | 
+            [[ -s clang-results.txt ]] && exit 1 || exit 0;
+            
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: "Install cmake"
+        run: pip install cmake
+      - name: "Apt Update"
+        run: sudo apt update 
+      - name: "Install Eigen"
+        run: sudo apt install libeigen3-dev -y
+      - name: "Install libyaml"
+        run: sudo apt install libyaml-cpp-dev -y
+      - name: "Install libyaml"
+        run: sudo apt-get install libboost-all-dev -y
+      - name: "Run Cmake"
+        run: cmake -S . -B build
+      - name: "Run make"
+        run: make -C build
+      - name: "Archive the build files for upload"
+        run: tar -cf build-files.tar build
+      - name: "Upload artifact"
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-files
+          path: build-files.tar
+          retention-days: 1
+  run_tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
+      - name: "Download build-files"
+        uses: actions/download-artifact@v2
+        with:
+          name: build-files
+      - name: "Install ctest"
+        run: pip install cmake
+      - name: "Apt Update"
+        run: sudo apt update 
+      - name: "Install libboost"
+        run: sudo apt-get install libboost-all-dev -y
+      - name: "Install Eigen"
+        run: sudo apt install libeigen3-dev -y
+      - name: "Install libyaml"
+        run: sudo apt install libyaml-cpp-dev -y
+      - name: "Run ls for debugging"
+        run: ls
+      - name: "Unpack build files"
+        run: tar -xf build-files.tar
+      - name: "Run ls for debugging"
+        run: ls
+      - name: "Run Ctest"
+        run: ctest -V --test-dir build

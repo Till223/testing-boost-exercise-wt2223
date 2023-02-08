@@ -1,3 +1,5 @@
+[![exercise_workflow](https://github.com/Till223/testing-boost-exercise-wt2223/actions/workflows/runTests.yml/badge.svg)](https://github.com/Till223/testing-boost-exercise-wt2223/actions/workflows/runTests.yml)
+
 # SIDEMADE - Simple Dense Matrix Decomposition
 
 A simple demo code to read dense matrices from files and solve linear systems with them.
